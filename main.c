@@ -181,7 +181,6 @@ int main(void) {
     while (1) {
         hand_t player_hand = {NULL, 0};
         hand_t dealer_hand = {NULL, 0};
-        hand_t split_hand = {NULL, 0}; // Second hand for splitting
 
         printf("Dealing Cards...\n");
 
@@ -195,27 +194,8 @@ int main(void) {
         printf("Dealer Showing: ");
         print_hand(&dealer_hand, 1);
 
-        int split = 0;
-        if (player_hand.total_cards == 2 && player_hand.cards[0].value == player_hand.cards[1].value) {
-            printf("Do you want to split? (1: Yes, 0: No): ");
-            if (scanf("%d", &split) == 1 && split == 1) {
-                append_card(&split_hand, player_hand.cards[1]);
-                player_hand.total_cards = 1;
-                printf("First Hand: ");
-                print_hand(&player_hand, player_hand.total_cards);
-                printf("Second Hand: ");
-                print_hand(&split_hand, split_hand.total_cards);
-            }
-        }
 
         play_hand(&deck, &player_hand);
-
-        if (split) {
-            append_card(&split_hand, draw(&deck));
-            printf("Playing second hand...\n");
-            play_hand(&deck, &split_hand);
-        }
-
         printf("Dealer Reveals: ");
         print_hand(&dealer_hand, dealer_hand.total_cards);
 
@@ -228,14 +208,7 @@ int main(void) {
         int player_score = hand_total(&player_hand);
         int dealer_score = hand_total(&dealer_hand);
 
-        if (split) {
-            int split_score = hand_total(&split_hand);
-            printf("First hand: %s\n", (player_score > dealer_score || dealer_score > 21) ? "Win" : "Lose");
-            printf("Second hand: %s\n", (split_score > dealer_score || dealer_score > 21) ? "Win" : "Lose");
-            free_hand(&split_hand);
-        } else {
-            printf("%s\n", (player_score > dealer_score || dealer_score > 21) ? "You Win!" : "You Lost!");
-        }
+        printf("%s\n", (player_score > dealer_score || dealer_score > 21) ? "You Win!" : "You Lost!");
 
         free_hand(&player_hand);
         free_hand(&dealer_hand);
