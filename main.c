@@ -160,6 +160,19 @@ void play_hand(deck_t *deck, hand_t *hand) {
     }
 }
 
+int is_blackjack(hand_t *hand) {
+    if (hand->total_cards != 2) return 0;
+
+    int has_ace = 0, has_ten_value = 0;
+
+    for (size_t i = 0; i < hand->total_cards; i++) {
+        if (hand->cards[i].value == 1) has_ace = 1;
+        if (hand->cards[i].value >= 10) has_ten_value = 1;
+    }
+
+    return has_ace && has_ten_value;
+}
+
 int main(void) {
     srand(time(NULL));
 
@@ -194,6 +207,32 @@ int main(void) {
         printf("Dealer Showing: ");
         print_hand(&dealer_hand, 1);
 
+        // Check for Blackjack
+        int player_blackjack = is_blackjack(&player_hand);
+        int dealer_blackjack = is_blackjack(&dealer_hand);
+
+        if (player_blackjack || dealer_blackjack) {
+            printf("Dealer Reveals: ");
+            print_hand(&dealer_hand, dealer_hand.total_cards);
+
+            if (player_blackjack && dealer_blackjack) {
+                printf("Push! Both you and the dealer have Blackjack.\n");
+            } else if (player_blackjack) {
+                printf("Blackjack! You win!\n");
+            } else {
+                printf("Dealer has Blackjack. You lose!\n");
+            }
+
+            free_hand(&player_hand);
+            free_hand(&dealer_hand);
+
+            printf("Play again? (1: Yes, 0: No): ");
+            int play_again;
+            if (scanf("%d", &play_again) != 1 || play_again == 0) {
+                break;
+            }
+            continue;
+        }
 
         play_hand(&deck, &player_hand);
         printf("Dealer Reveals: ");
@@ -208,7 +247,15 @@ int main(void) {
         int player_score = hand_total(&player_hand);
         int dealer_score = hand_total(&dealer_hand);
 
-        printf("%s\n", (player_score > dealer_score || dealer_score > 21) ? "You Win!" : "You Lost!");
+        if (player_score > 21) {
+            printf("Bust! You lose this hand.\n");
+        } else if (dealer_score > 21 || player_score > dealer_score) {
+            printf("You Win!\n");
+        } else if (player_score == dealer_score) {
+            printf("Push! It's a tie.\n");
+        } else {
+            printf("You Lost!\n");
+        }
 
         free_hand(&player_hand);
         free_hand(&dealer_hand);
